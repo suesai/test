@@ -1,0 +1,1 @@
+/home/susai/project/c++/algorithm/stack/include/stack.h

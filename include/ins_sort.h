@@ -1,0 +1,1 @@
+/home/susai/project/c++/algorithm/ins_sort/include/ins_sort.h
