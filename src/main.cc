@@ -87,9 +87,9 @@ void Func(auto&& f) noexcept
 
 int main(int argc, char *argv[], char *env[])
 {
-  Func(Foo1{});
-  Foo1 f;
-  Func(f);
+  // Func(Foo1{});
+  // Foo1 f;
+  // Func(f);
 
   std::cout << "\nEnd\n";
   return EXIT_SUCCESS;
