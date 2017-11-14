@@ -90,6 +90,7 @@ int main(int argc, char *argv[], char *env[])
   // Func(Foo1{});
   // Foo1 f;
   // Func(f);
+  std::cout << "just for test!\n";
 
   std::cout << "\nEnd\n";
   return EXIT_SUCCESS;
