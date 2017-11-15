@@ -1,2 +1,2 @@
 right
-branch master
+resolve conflicts casued by mergence
