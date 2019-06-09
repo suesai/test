@@ -2,7 +2,7 @@ CXX := g++
 CXXFLAGS := -Wall -std=c++14 -g -fno-elide-constructors
 CPPFLAGS := -Iinclude -MMD
 LDFLAGS := -Llib -Wl,-rpath,/home/susai/project/c++/test/lib
-LDLIBS := -lqk_sort -lins_sort -lstack -lpthread -lrt
+LDLIBS := -lpthread
 RM := rm -rf
 
 BINDIR := bin
