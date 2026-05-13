@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import fs from "node:fs/promises";
 import path from "node:path";
+import os from "node:os";
 import type { OpenClawPluginApi } from "openclaw/plugin-sdk/core";
 import { emptyPluginConfigSchema } from "openclaw/plugin-sdk/core";
 import { aesGcmEncrypt } from "openclaw/plugin-sdk/coclaw";
@@ -13,7 +14,6 @@ import {
   pollDeviceToken,
   type QwenOAuthToken,
 } from "./qwen-oauth.js";
-import { getGlobalAesGcmKey } from "openclaw/plugin-sdk/coclaw";
 
 /** Config shape for RPC (providerKey, baseUrl, apiKey, modelName) */
 type ConfigShape = {
@@ -140,6 +140,25 @@ type OAuthPollSession = {
 
 const oauthPollSessions = new Map<string, OAuthPollSession>();
 const STALE_SESSION_MS = 15 * 60 * 1000;
+
+/** 调试日志文件路径 */
+const DEBUG_LOG_PATH = path.join(os.homedir(), ".openclaw", "logs", "model-config-generic.log");
+
+/**
+ * 写入调试日志到文件（测试用）
+ */
+async function writeDebugLog(message: string): Promise<void> {
+  try {
+    const logDir = path.dirname(DEBUG_LOG_PATH);
+    await fs.mkdir(logDir, { recursive: true });
+    const timestamp = new Date().toISOString();
+    const logLine = `[${timestamp}] ${message}\n`;
+    await fs.appendFile(DEBUG_LOG_PATH, logLine, "utf8");
+  } catch (err) {
+    // 静默失败，避免影响主流程
+    console.error("[model-config-generic] Failed to write debug log:", err);
+  }
+}
 
 function purgeStaleOAuthSessions(): void {
   const now = Date.now();
@@ -329,17 +348,17 @@ const plugin = {
       // 从插件配置中获取 enc 和 providerKey 配置项：启动加密或者为联通集团模型，则加密 apiKey
       const pluginConfig = api.pluginConfig;
       const shouldEncrypt = pluginConfig?.enc || pluginConfig?.providerKey === "cloudpc-unicom-manual";
-      // 查看当前使用的 AES 密钥（调试用）
-      const currentAesKey = getGlobalAesGcmKey();
       const encryptedApiKey = shouldEncrypt ? aesGcmEncrypt(apiKey) : undefined;
-      console.log("[model-config-generic] AES Key Debug:", {
-        aesKey: currentAesKey,
-        apiKeyBefore: apiKey || "empty",
-        apiKeyAfter: encryptedApiKey || "not encrypted",
-        shouldEncrypt,
-        pluginConfigEnc: pluginConfig?.enc,
-        providerKey: pluginConfig?.providerKey,
-      });
+      // 写入调试日志到文件（测试用）
+      await writeDebugLog(
+        JSON.stringify({
+          apiKeyBefore: apiKey || "empty",
+          apiKeyAfter: encryptedApiKey || "not encrypted",
+          shouldEncrypt,
+          pluginConfigEnc: pluginConfig?.enc,
+          providerKey: pluginConfig?.providerKey,
+        }),
+      );
       respond(true, { ok: true, apiKey: encryptedApiKey });
     });
 
